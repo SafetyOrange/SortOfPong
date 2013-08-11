@@ -3,8 +3,13 @@
 // J Matthew Griffis
 // K Anthony Marefat
 
-int level;  //WHAT R U DOING?
+//NOTE: This game was made quick and dirty.
+//The code is sloppy, and yours should be better.
 
+//Game States are set with this variable
+int level;  
+
+//Ball Stuff
 float ballX;
 float ballY;
 float ballXVel;
@@ -13,8 +18,10 @@ float ballSize;
 float offScreenMargin;
 float ballMaxSpeed;
 
+//Our makeshift clock (Unorthodox)
 float timeCount=0;
 
+//Paddle Stats
 int paddleWidth = 20;
 int paddleHeight = 100;
 int paddleSpeed = 5;
@@ -49,17 +56,17 @@ void setup() {
   size(600, 600);
   frameRate(60);
   smooth();
-  p1X = 10;
-  p1Y = height/2-paddleHeight/2;
+  p1X = 10;                         //Left Side
+  p1Y = height/2-paddleHeight/2;    //Halfway Down
 
-  p2X = width-paddleWidth-10;
-  p2Y = height/2-paddleHeight/2;
+  p2X = width-paddleWidth-10;        //Right Side
+  p2Y = height/2-paddleHeight/2;     //Halfway Down
 
-  p3X = width/2;
-  p3Y = 10;
+  p3X = width/2;                    //Halfway Across
+  p3Y = 10;                        //Top
 
-  p4X = width/2;
-  p4Y = height-paddleWidth-10;
+  p4X = width/2;                    //Halfway Across
+  p4Y = height-paddleWidth-10;      //Bottom
 
   ballX=width/2;
   ballY=height/2;
@@ -83,7 +90,7 @@ void draw() {
     if (keyPressed)level=1;
   }
 
-
+  //GAME ON
   if (level==1) {
     background(0);
 
@@ -116,38 +123,38 @@ void draw() {
     }
 
     // PADDLE 1
-    if (ballX-ballSize/2 <= p1X+paddleWidth &&
-      ballX+ballSize/2 >= p1X &&
-      ballY+ballSize/2 >= p1Y &&
-      ballY-ballSize/2 <= p1Y+paddleHeight) {
-      ballXVel *= -1.2;
-      score++;
+    if (ballX-ballSize/2 <= p1X+paddleWidth &&    //If the left side of the ball hits the right edge of the paddle
+    ballX+ballSize/2 >= p1X &&                  //From the Right 
+    ballY+ballSize/2 >= p1Y &&                  //and the ball is beneath the top of the paddle
+    ballY-ballSize/2 <= p1Y+paddleHeight) {     //and above the bottom of the paddle
+      ballXVel *= -1.2;      //change direction and accelerate
+      score++;                //add one to score
       //    ballYVel *= -1;
     }
 
     // PADDLE 2
-    if (ballX-ballSize/2 <= p2X+paddleWidth &&
-      ballX+ballSize/2 >= p2X &&
-      ballY+ballSize/2 >= p2Y &&
-      ballY-ballSize/2 <= p2Y+paddleHeight) {
+    if (ballX+ballSize/2 >= p2X &&    //If the right end of the ball hits the left edge of the paddle
+    ballX+ballSize/2 >= p2X &&      // From the left
+    ballY+ballSize/2 >= p2Y &&      //and the ball is beneath the top of the paddle
+    ballY-ballSize/2 <= p2Y+paddleHeight) {    //and above the bottom of the paddle
       ballXVel *= -1.2;
       score++;
     }
 
     // PADDLE 3
-    if (ballX-ballSize/2 <= p3X+paddleHeight &&
-      ballX+ballSize/2 >= p3X &&
-      ballY+ballSize/2 >= p3Y &&
-      ballY-ballSize/2 <= p3Y+paddleWidth) {
+    if (ballX-ballSize/2 <= p3X+paddleHeight &&    //If the left end of the ball hits the left of the right end of the paddle
+    ballX+ballSize/2 >= p3X &&                  //If the right end of the ball is to the right of the left end of the paddle
+    ballY+ballSize/2 >= p3Y &&                  //From underneath the paddle
+    ballY-ballSize/2 <= p3Y+paddleWidth) {      //and underneath the bottom of the paddle
       ballYVel *= -1.2;
       score++;
     }
 
     // PADDLE 4
-    if (ballX-ballSize/2 <= p4X+paddleHeight &&
-      ballX+ballSize/2 >= p4X &&
-      ballY+ballSize/2 >= p4Y &&
-      ballY-ballSize/2 <= p4Y+paddleWidth) {
+    if (ballX-ballSize/2 <= p4X+paddleHeight &&    //If the left end of the ball is to the left of the right end of the paddle
+    ballX+ballSize/2 >= p4X &&                    //If the right end of the ball is to the right of the left end of the paddle
+    ballY+ballSize/2 >= p4Y &&                    //The bottom of the ball is past the top of the paddle
+    ballY-ballSize/2 <= p4Y+paddleWidth) {      //The top of the ball is above the top edge of the paddle
       ballYVel *= -1.2;
       score++;
     }
