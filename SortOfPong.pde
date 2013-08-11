@@ -1,45 +1,62 @@
 // THIS IS GAME DESIGN!
 // "Pong"
-// J Matthew Griffis
-// K Anthony Marefat
+// J. Matthew Griffis
+// K. Anthony Marefat
 
-//NOTE: This game was made quick and dirty.
-//The code is sloppy, and yours should be better.
+//NOTE: This game was made in a quick-and-dirty, beginner-friendly fashion.
+//The code is sloppy, and yours should be better. As you get more comfortable
+//with code, think of ways to optimize what you see here. For instance,
+//use of variables for everything, object-oriented programming, and creating
+//your own functions all would do much to make this code harder better faster
+//stronger (http://youtu.be/gAjR4_CbPpQ). But this will do for a start!
 
-//Game States are set with this variable
+//Use a variable to control the "state" of the game. This might be the current
+//level, or a menu screen. The current value of the variable will control what
+//part of the Draw function runs. For instance you might make the title screen
+//appear when level = 0, then the actual game when level = 1, then the win (or
+//loss) screen when level = 2.
 int level;  
 
-//Ball Stuff
+//Ball Parameters
 float ballX;
 float ballY;
 float ballXVel;
 float ballYVel;
-float ballSize;
-float offScreenMargin;
-float ballMaxSpeed;
+float ballSize; //Diameter (not radius).
+float offScreenMargin; //Distance between edge of screen and paddle.
+float ballMaxSpeed; //Ball can't go faster than this.
+float ballMinSpeed; //Ball can't go slower than this.
 
-//Our makeshift clock (Unorthodox)
+//We'll use a float that increases every frame to time how long the ball stays
+//in play:
 float timeCount=0;
 
-//Paddle Stats
+//Paddle Parameters
 int paddleWidth = 20;
 int paddleHeight = 100;
-int paddleSpeed = 5;
+int paddleSpeed = 5; //How quickly the paddle moves at your command.
 
+//We'll use an integer to track how many times you bounce the ball before
+//losing it:
 int score = 0;
 
-int p1X;     //Left Paddle
+//Left Paddle
+int p1X;
 int p1Y;
 
-int p2X;      // Right Paddle
+//Right Paddle
+int p2X;
 int p2Y;
 
+//Top Paddle
 int p3X;
-int p3Y;        // Top Paddle  
+int p3Y; 
 
+//Bottom Paddle
 int p4X;
-int p4Y;        //Bottom Paddle
+int p4Y;
 
+//We'll use booleans to enable and disable movement for each paddle:
 boolean p1UP = false;
 boolean p1DOWN = false;
 
@@ -53,121 +70,167 @@ boolean p4LEFT = false;
 boolean p4RIGHT = false;
 
 void setup() {
-  size(600, 600);
-  frameRate(60);
-  smooth();
-  p1X = 10;                         //Left Side
-  p1Y = height/2-paddleHeight/2;    //Halfway Down
+  size(600, 600); //Size of the playing field.
+  frameRate(60); //60 frames per second (we use this knowledge for our timer).
+  smooth(); //It's magic! (not really)
+  
+  //We initialize the variables we created earlier. Remember that the ball is
+  //drawn from its center but all the paddles are drawn from their upper-left
+  //corner. We must keep that in mind when positioning everything. Also
+  //remember that we will flip paddleWidth and paddleHeight for the top and
+  //bottom paddles, since they are short and fat instead of tall and thin.
+  
+  p1X = 10;                         //10 from the screen's left edge.
+  p1Y = height/2-paddleHeight/2;    //This centers the paddle vertically.
 
-  p2X = width-paddleWidth-10;        //Right Side
-  p2Y = height/2-paddleHeight/2;     //Halfway Down
+  p2X = width-paddleWidth-10;       //10 from the screen's right edge.
+  p2Y = height/2-paddleHeight/2;    //This centers the paddle vertically.
 
-  p3X = width/2;                    //Halfway Across
-  p3Y = 10;                        //Top
+  p3X = width/2-paddleHeight/2;     //This centers the paddle horizontally.
+  p3Y = 10;                         //10 from the screen's top edge.
 
-  p4X = width/2;                    //Halfway Across
-  p4Y = height-paddleWidth-10;      //Bottom
+  p4X = width/2-paddleHeight/2;     //This centers the paddle horizontally.
+  p4Y = height-paddleWidth-10;      //10 from the screen's bottom edge.
 
-  ballX=width/2;
-  ballY=height/2;
-  //ballXVel=random(-5, 5);
-  ballXVel= 1;
-  ballYVel = 2;
-  //ballYVel=random(-5, 5);
+  ballX=width/2; //Horizontal center.
+  ballY=height/2; //Vertical center.
+  
+  ballXVel=random(-3, 3); //Random speed between the two values.
+  ballYVel=random(-3, 3);
+  
   ballSize=10;
   offScreenMargin = 500;
   ballMaxSpeed = 15;
+  ballMinSpeed = 1;
 }
 
 void draw() {
 
+  //NOTICE THAT everything in the Draw function is encased inside a conditional
+  //("if") statement. That's because we're only drawing certain things,
+  //depending on the value of our game-controlling "level" variable.
+  
   //TITLE SCREEN
   if (level==0) {
     background(0);
     textSize(40);
     text("Ready Player One", width/2-160, height/2+200);
     text("Press any key to start", width/2-200, height/2);
-    if (keyPressed)level=1;
+    if (keyPressed) level=1; //Here we change the value of the level variable,
+    //cueing the Draw function to move on to the next section, below.
   }
 
   //GAME ON
-  if (level==1) {
+  if (level==1) { //Now we draw the actual gameplay.
     background(0);
+
+    //First, draw some UI elements:
 
     //"Score"
     textSize(32);
-    text(timeCount/60, 0, 30);
-    text(score, 10, 70);
-    timeCount++;
+    text("Time: ", width/2-90, height/2-5);
+    text(timeCount/60, width/2, height/2-5);
+    text("Score: " + score, width/2-60, height/2+35);
+    timeCount++; // We want to display the time passing, preferably in seconds,
+    //so we add one to the variable every frame. We know that the Draw function
+    //runs 60 times per second (because we set the frameRate above) so we
+    //divide the variable by 60 when displaying it as text. That yields seconds.
 
-
-    //Draw the Paddles + Ball
+    //Draw the Paddles (remember to flip the width and height for the
+    //top and bottom paddles):
     rect(p1X, p1Y, paddleWidth, paddleHeight);
     rect(p2X, p2Y, paddleWidth, paddleHeight);
     rect(p3X, p3Y, paddleHeight, paddleWidth);
     rect(p4X, p4Y, paddleHeight, paddleWidth);
 
+    //Draw the ball:
     ellipse(ballX, ballY, ballSize, ballSize);
 
-    //Update Ball
+    //Update the Ball's position using its velocity:
     ballX+=ballXVel;
     ballY+=ballYVel;
 
+    //If the ball goes too far offscreen, "reset" it to the center of the screen
+    //with a new, random x- and yVel. We use an off-screen margin to prevent the
+    //ball from reappearing too quickly:
     if (ballX>width+offScreenMargin || ballX<-offScreenMargin || ballY<-offScreenMargin || ballY>height+offScreenMargin) {
       ballX=width/2;
       ballY=height/2;
-      ballXVel=random(-5, 5);
-      ballYVel=random(-5, 5);
+      ballXVel=random(-3, 3);
+      ballYVel=random(-3, 3);
+      //Also reset the timer and score counter:
       timeCount=0;
       score=0;
     }
 
+    //COLLISION DETECTION!! Woo! We need to detect if the ball overlaps with the
+    //paddle, then reverse the ball's direction appropriately. We'll have to do
+    //this for each paddle. The commented notes in the first paddle are the same
+    //for all the paddles.
+    
     // PADDLE 1
-    if (ballX-ballSize/2 <= p1X+paddleWidth &&    //If the left side of the ball hits the right edge of the paddle
-    ballX+ballSize/2 >= p1X &&                  //From the Right 
-    ballY+ballSize/2 >= p1Y &&                  //and the ball is beneath the top of the paddle
-    ballY-ballSize/2 <= p1Y+paddleHeight) {     //and above the bottom of the paddle
-      ballXVel *= -1.2;      //change direction and accelerate
-      score++;                //add one to score
-      //    ballYVel *= -1;
+    if (ballX-ballSize/2 <= p1X+paddleWidth && //Left edge of ball must be left of right edge of paddle.
+    ballX+ballSize/2 >= p1X &&                  //Right edge of ball must be right of left edge of paddle. 
+    ballY+ballSize/2 >= p1Y &&                  //Bottom edge of ball must be below top edge of paddle.
+    ballY-ballSize/2 <= p1Y+paddleHeight) {     //Top edge of ball must be above bottom edge of paddle.
+      ballXVel *= -1.2;      //Reverse (and accelerate) only the velocity that makes sense (not both vels).
+      score++;                //Add one to the score.
     }
 
     // PADDLE 2
-    if (ballX+ballSize/2 >= p2X &&    //If the right end of the ball hits the left edge of the paddle
-    ballX+ballSize/2 >= p2X &&      // From the left
-    ballY+ballSize/2 >= p2Y &&      //and the ball is beneath the top of the paddle
-    ballY-ballSize/2 <= p2Y+paddleHeight) {    //and above the bottom of the paddle
+    if (ballX-ballSize/2 <= p2X+paddleWidth &&
+    ballX+ballSize/2 >= p2X &&
+    ballY+ballSize/2 >= p2Y &&
+    ballY-ballSize/2 <= p2Y+paddleHeight) {
       ballXVel *= -1.2;
       score++;
     }
 
-    // PADDLE 3
-    if (ballX-ballSize/2 <= p3X+paddleHeight &&    //If the left end of the ball hits the left of the right end of the paddle
-    ballX+ballSize/2 >= p3X &&                  //If the right end of the ball is to the right of the left end of the paddle
-    ballY+ballSize/2 >= p3Y &&                  //From underneath the paddle
-    ballY-ballSize/2 <= p3Y+paddleWidth) {      //and underneath the bottom of the paddle
+    // PADDLE 3 (remember we must flip width and height)
+    if (ballX-ballSize/2 <= p3X+paddleHeight &&
+    ballX+ballSize/2 >= p3X &&
+    ballY+ballSize/2 >= p3Y &&
+    ballY-ballSize/2 <= p3Y+paddleWidth) {
       ballYVel *= -1.2;
       score++;
     }
 
-    // PADDLE 4
-    if (ballX-ballSize/2 <= p4X+paddleHeight &&    //If the left end of the ball is to the left of the right end of the paddle
-    ballX+ballSize/2 >= p4X &&                    //If the right end of the ball is to the right of the left end of the paddle
-    ballY+ballSize/2 >= p4Y &&                    //The bottom of the ball is past the top of the paddle
-    ballY-ballSize/2 <= p4Y+paddleWidth) {      //The top of the ball is above the top edge of the paddle
+    // PADDLE 4 (remember we must flip width and height)
+    if (ballX-ballSize/2 <= p4X+paddleHeight &&
+    ballX+ballSize/2 >= p4X &&
+    ballY+ballSize/2 >= p4Y &&
+    ballY-ballSize/2 <= p4Y+paddleWidth) {
       ballYVel *= -1.2;
       score++;
     }
 
-    // Limit the ball speed so it doesn't get too fast
-    // for the collision detection:
+    // Limit the ball speed so it doesn't get too fast for the collision
+    // detection by resetting it to the max when it gets bigger than the max:
     if (ballXVel > ballMaxSpeed) ballXVel = ballMaxSpeed;
     if (ballYVel > ballMaxSpeed) ballYVel = ballMaxSpeed;
     if (ballXVel < -ballMaxSpeed) ballXVel = -ballMaxSpeed;
     if (ballYVel < -ballMaxSpeed) ballYVel = -ballMaxSpeed;
+    
+    // Limit the ball speed so it doesn't go too slowly (this is a risk when
+    // you use random with a range that includes zero). If the speed is too
+    // small, we increase it:
+    if (ballXVel > -ballMinSpeed && ballXVel < 0) ballXVel-=0.1;
+    if (ballYVel > -ballMinSpeed && ballYVel < 0) ballYVel-=0.1;
+    if (ballXVel < ballMinSpeed && ballXVel > 0) ballXVel+=0.1;
+    if (ballYVel < ballMinSpeed && ballYVel > 0) ballYVel+=0.1;
 
 
     //MOVEMENT!!!!
+    
+    //As previously mentioned, we use booleans to control movement, switching
+    //them on and off with the key press and release. We do this because if
+    //we moved the paddles directly with the key press, holding down the button
+    //would only move the paddle one increment. You'd have to keep tapping the
+    //button to move, and there'd be no fluidity. That's because the operating
+    //system doesn't recognize repeated calls to the key's function when you
+    //hold it down. The boolean only has to be triggered once, though, and then
+    //the conditional statements in the Draw function keep the paddle moving.
+    
     if (p1UP==true) {
       p1Y -= paddleSpeed;
     }
